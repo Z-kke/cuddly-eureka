@@ -5,14 +5,14 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 
 # Copy the package.json and install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install --production
+COPY package.json package-lock.json ./
+RUN npm install --production
 
 # Copy the rest of the application code
 COPY . .
 
 # Build TypeScript files
-RUN yarn build
+RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
