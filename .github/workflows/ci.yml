@@ -8,6 +8,7 @@ on:
     branches:
       - master
 
+# TODO: Add secrets into env or something similiar, not a problem as currently this is just a local test page.
 jobs:
   build:
     runs-on: ubuntu-latest
