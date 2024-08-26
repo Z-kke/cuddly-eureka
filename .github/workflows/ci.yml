@@ -1,6 +1,12 @@
 name: CI/CD Pipeline
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -8,37 +14,45 @@ jobs:
 
     services:
       postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
+        image: postgres:15-alpine
+        ports: ["5432:5432"]
         env:
-          POSTGRES_USER: user
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: taskify
+          POSTGRES_DB: taskmanager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Install Backend Dependencies
-        run: |
-          cd backend
-          npm install
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
 
-      - name: Run Backend Tests
-        run: |
-          cd backend
-          npm test
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test
 
-      - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm install
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
 
-      - name: Run Frontend Tests
-        run: |
-          cd frontend
-          npm test
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm test
+
+      - name: Build backend Docker image
+        run: docker build -t backend ./backend
+
+      - name: Build frontend Docker image
+        run: docker build -t frontend ./frontend
