@@ -4,12 +4,12 @@ import { Checkbox, ListItemButton, ListItemText } from "@mui/material";
 
 interface TaskItemProps {
   task: Task;
-  onToggle: () => void;
+  onToggle: (id: number) => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle }) => {
   return (
-    <ListItemButton onClick={onToggle}>
+    <ListItemButton onClick={() => onToggle(task.id)}>
       <Checkbox checked={task.completed} />
       <ListItemText primary={task.title} secondary={task.description} />
     </ListItemButton>
