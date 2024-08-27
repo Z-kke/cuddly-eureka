@@ -1,17 +1,12 @@
-import express, { Application, Request, Response } from "express";
-import dotenv from "dotenv";
+import express from "express";
+import taskRoutes from "./routes/taskRoutes";
 
-dotenv.config();
-
-const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const app = express();
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, Task Manager!");
-});
+app.use("/api", taskRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
