@@ -1,46 +1,60 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { Task } from "../types/task";
+import {
+  getTasks,
+  addTask,
+  updateTask,
+  deleteTask,
+} from "../services/taskService";
 
 interface TaskState {
   tasks: Task[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: TaskState = {
-  tasks: [
-    {
-      id: 1,
-      title: "Learn React",
-      description: "Study React basics",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Learn Redux",
-      description: "Study state management with Redux",
-      completed: false,
-    },
-    {
-      id: 3,
-      title: "Build an App",
-      description: "Create a task manager app",
-      completed: false,
-    },
-  ],
+  tasks: [],
+  loading: false,
+  error: null,
 };
+
+// Async thunks
+export const fetchTasks = createAsyncThunk("tasks/fetchTasks", async () => {
+  const tasks = await getTasks();
+  return tasks;
+});
+
+export const createTask = createAsyncThunk(
+  "tasks/createTask",
+  async (task: Omit<Task, "id">) => {
+    const newTask = await addTask(task);
+    return newTask;
+  },
+);
 
 const taskSlice = createSlice({
   name: "tasks",
   initialState,
-  reducers: {
-    addTask: (state, action: PayloadAction<Task>) => {
-      state.tasks.push(action.payload);
-    },
-    toggleTask: (state, action: PayloadAction<number>) => {
-      const task = state.tasks.find((task) => task.id === action.payload);
-      if (task) task.completed = !task.completed;
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTasks.fulfilled, (state, action: PayloadAction<Task[]>) => {
+        state.loading = false;
+        state.tasks = action.payload;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch tasks";
+      })
+      .addCase(createTask.fulfilled, (state, action: PayloadAction<Task>) => {
+        state.tasks.push(action.payload);
+      });
   },
 });
 
-export const { addTask, toggleTask } = taskSlice.actions;
 export default taskSlice.reducer;
